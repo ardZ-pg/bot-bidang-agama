@@ -11,10 +11,16 @@ const ID_GRUP_WA = 'MASUKKAN_ID_GRUP_WA_ANDA@g.us';
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: { 
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null,
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-extensions'] 
+        executablePath: '/usr/bin/google-chrome-stable', // Jalur Chrome di server Docker resmi
+        args: [
+            '--no-sandbox', 
+            '--disable-setuid-sandbox', 
+            '--disable-dev-shm-usage',
+            '--disable-extensions'
+        ] 
     }
 });
+
 
 client.on('qr', (qr) => {
     qrcode.generate(qr, { small: true });
