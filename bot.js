@@ -1,5 +1,5 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
+const qrcodeTerminal = require('qrcode-terminal');
 const cron = require('node-cron');
 const axios = require('axios');
 
@@ -11,7 +11,7 @@ const ID_GRUP_WA = 'MASUKKAN_ID_GRUP_WA_ANDA@g.us';
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: { 
-        executablePath: '/usr/bin/google-chrome-stable', // Jalur Chrome di server Docker resmi
+        executablePath: '/usr/bin/google-chrome-stable',
         args: [
             '--no-sandbox', 
             '--disable-setuid-sandbox', 
@@ -21,16 +21,22 @@ const client = new Client({
     }
 });
 
-
+// KODE UNTUK MEMUNCULKAN LINK GAMBAR QR KOTAK SEMPURNA
 client.on('qr', (qr) => {
-    qrcode.generate(qr, { small: true });
-    console.log('👉 SCAN QR INI DENGAN IPHONE ANDA:');
+    // Tetap cetak di terminal sebagai cadangan
+    qrcodeTerminal.generate(qr, { small: true });
+    
+    // Cetak LINK GAMBAR yang tinggal Anda klik!
+    const linkGambarQR = `https://qrserver.com{encodeURIComponent(qr)}`;
+    console.log('\n==================================================');
+    console.log('👉 KLIK ATAU SALIN LINK DI BAWAH INI UNTUK SCAN QR KOTAK LURUS:');
+    console.log(linkGambarQR);
+    console.log('==================================================\n');
 });
 
 client.on('ready', () => {
     console.log('🤖 Bot Bidang Agama Sudah Aktif dan Standby di Server!');
     
-    // === KODE SEMENTARA UNTUK MENCARI ID GRUP ===
     client.getChats().then(chats => {
         const groups = chats.filter(chat => chat.isGroup);
         console.log('=== DAFTAR ID GRUP ANDA ===');
@@ -39,14 +45,11 @@ client.on('ready', () => {
         });
         console.log('============================');
     }).catch(err => console.log('Gagal memuat daftar chat:', err.message));
-    // ==========================================
 
     cron.schedule('0 7 * * 1-4', async () => {
         try {
             console.log('Memulai pengecekan jadwal piket hari ini...');
-            
             const response = await axios.get(LINK_GOOGLE_SHEETS_CSV);
-            // Pisahkan baris teks berdasarkan baris baru (\n atau \r\n)
             const barisTeks = response.data.split(/\r?\n/);
             
             const tanggalHariIni = new Date().getDate();
@@ -58,10 +61,8 @@ client.on('ready', () => {
             let muadzinHariIni = '';
             let dzikirHariIni = '';
             
-            // Loop dimulai dari indeks 1 (lewati baris judul/header)
             for (let i = 1; i < barisTeks.length; i++) {
-                if (!barisTeks[i].trim()) continue; // Lewati jika baris kosong
-                
+                if (!barisTeks[i].trim()) continue;
                 const kolom = barisTeks[i].split(',');
                 const kolomMinggu = kolom[0]?.trim();
                 const kolomHari = kolom[1]?.trim();
@@ -77,7 +78,7 @@ client.on('ready', () => {
                 const pesan = `Assalamualaikum! 📢\n\n` +
                               `Pengingat petugas *Bot Bidang Agama* di *Minggu ke-${mingguKe}* hari *${namaHariIni}* ini:\n\n` +
                               `Subuh/Dzuhur/Ashar:\n` +
-                              `室 *Muadzin:* ${muadzinHariIni}\n` +
+                              `🕌 *Muadzin:* ${muadzinHariIni}\n` +
                               `📿 *Dzikir:* ${dzikirHariIni}\n\n` +
                               `Mohon mempersiapkan diri ya teman-teman. Terima kasih!`;
                 
@@ -86,7 +87,6 @@ client.on('ready', () => {
             } else {
                 console.log('⚠️ Jadwal untuk hari ini tidak ditemukan di tabel.');
             }
-            
         } catch (error) {
             console.error('❌ Terjadi kesalahan sistem:', error.message);
         }
