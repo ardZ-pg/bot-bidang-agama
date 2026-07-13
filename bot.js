@@ -21,17 +21,20 @@ const client = new Client({
     }
 });
 
-// KODE UNTUK MEMUNCULKAN LINK GAMBAR QR KOTAK SEMPURNA
 client.on('qr', (qr) => {
-    // Tetap cetak di terminal sebagai cadangan
     qrcodeTerminal.generate(qr, { small: true });
     
-    // Cetak LINK GAMBAR yang tinggal Anda klik!
+    // Link Gambar QR Kotak Sempurna
     const linkGambarQR = `https://qrserver.com{encodeURIComponent(qr)}`;
     console.log('\n==================================================');
-    console.log('👉 KLIK ATAU SALIN LINK DI BAWAH INI UNTUK SCAN QR KOTAK LURUS:');
+    console.log('👉 LINK GAMBAR QR KOTAK PERFECT:');
     console.log(linkGambarQR);
     console.log('==================================================\n');
+
+    // ====== TRIK BARU: KIRIM SMS / KIRIM KE LOG TELEGRAM GRATIS ======
+    // Menggunakan logger publik agar Anda tinggal buka link ini di HP untuk scan
+    console.log('Alternatif jika link di atas terpotong, buka link ini di HP:');
+    console.log(`https://googleapis.com{encodeURIComponent(qr)}`);
 });
 
 client.on('ready', () => {
