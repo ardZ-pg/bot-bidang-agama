@@ -1,15 +1,20 @@
 {
-  "name": "bot bidang agama",
+  "name": "bot-bidang-agama",
   "version": "1.0.0",
   "description": "Bot Piket Terjadwal",
   "main": "bot.js",
   "scripts": {
-    "start": "node bot.js"
+    "start": "node bot.js",
+    "postinstall": "npx puppeteer browsers install chrome"
   },
   "dependencies": {
     "whatsapp-web.js": "^1.23.0",
+    "puppeteer": "^22.0.0",
     "qrcode-terminal": "^0.12.0",
     "node-cron": "^3.0.3",
     "axios": "^1.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
