@@ -11,6 +11,7 @@ const ID_GRUP_WA = 'MASUKKAN_ID_GRUP_WA_ANDA@g.us';
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: { 
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null,
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-extensions'] 
     }
 });
@@ -31,7 +32,7 @@ client.on('ready', () => {
             console.log(`Nama Grup: ${group.name} | ID Grup: ${group.id._serialized}`);
         });
         console.log('============================');
-    });
+    }).catch(err => console.log('Gagal memuat daftar chat:', err.message));
     // ==========================================
 
     cron.schedule('0 7 * * 1-4', async () => {
@@ -39,7 +40,8 @@ client.on('ready', () => {
             console.log('Memulai pengecekan jadwal piket hari ini...');
             
             const response = await axios.get(LINK_GOOGLE_SHEETS_CSV);
-            const barisData = response.data.split('\n').map(row => row.split(','));
+            // Pisahkan baris teks berdasarkan baris baru (\n atau \r\n)
+            const barisTeks = response.data.split(/\r?\n/);
             
             const tanggalHariIni = new Date().getDate();
             const mingguKe = Math.ceil(tanggalHariIni / 7);
@@ -50,13 +52,17 @@ client.on('ready', () => {
             let muadzinHariIni = '';
             let dzikirHariIni = '';
             
-            for (let i = 1; i < barisData.length; i++) {
-                const kolomMinggu = barisData[i][0]?.trim();
-                const kolomHari = barisData[i][1]?.trim();
+            // Loop dimulai dari indeks 1 (lewati baris judul/header)
+            for (let i = 1; i < barisTeks.length; i++) {
+                if (!barisTeks[i].trim()) continue; // Lewati jika baris kosong
+                
+                const kolom = barisTeks[i].split(',');
+                const kolomMinggu = kolom[0]?.trim();
+                const kolomHari = kolom[1]?.trim();
                 
                 if (kolomMinggu == mingguKe && kolomHari === namaHariIni) {
-                    muadzinHariIni = barisData[i][2]?.trim();
-                    dzikirHariIni = barisData[i][3]?.trim();
+                    muadzinHariIni = kolom[2]?.trim();
+                    dzikirHariIni = kolom[3]?.trim();
                     break;
                 }
             }
@@ -65,7 +71,7 @@ client.on('ready', () => {
                 const pesan = `Assalamualaikum! 📢\n\n` +
                               `Pengingat petugas *Bot Bidang Agama* di *Minggu ke-${mingguKe}* hari *${namaHariIni}* ini:\n\n` +
                               `Subuh/Dzuhur/Ashar:\n` +
-                              `🕌 *Muadzin:* ${muadzinHariIni}\n` +
+                              `室 *Muadzin:* ${muadzinHariIni}\n` +
                               `📿 *Dzikir:* ${dzikirHariIni}\n\n` +
                               `Mohon mempersiapkan diri ya teman-teman. Terima kasih!`;
                 
